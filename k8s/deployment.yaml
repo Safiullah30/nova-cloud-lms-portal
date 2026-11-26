@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lms-portal
+  namespace: nova-cloud
+  labels:
+    app: lms-portal
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lms-portal
+  template:
+    metadata:
+      labels:
+        app: lms-portal
+    spec:
+      containers:
+        - name: lms-portal
+          image: nova-cloud/lms-portal:v1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: lms-portal-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
